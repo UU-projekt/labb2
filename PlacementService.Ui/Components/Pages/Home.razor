@@ -65,10 +65,9 @@ else if (results is not null)
             <h2 class="mt-4 mb-3">Yrkesgrupper</h2>
             <div class="table-responsive">
                 <table class="table table-striped table-hover table-bordered align-middle">
-                    <thead class="table-dark">
+                    <thead class="table-primary">
                         <tr>
-                            <th>Yrkesroll</th>
-                            <th>SSYK</th>
+                            <th>Yrkesroll (SSYK)</th>
                             <th>Månadslön</th>
                             <th>Annonser</th>
                         </tr>
@@ -76,7 +75,6 @@ else if (results is not null)
                     <tbody>
                     @foreach (OccupationSummaryItem thin in summary.Occupations) {
                         <tr>
-                            <td>@thin.OccupationLabel</td>
                             <td><span class="badge bg-secondary">@thin.OccupationSsyk</span></td>
                             <td>@thin.Salary?.MonthlySalarySek KR</td>
                             <td>@thin.AdsCount</td>
@@ -104,16 +102,15 @@ else if (results is not null)
         <div class="table-responsive">
             <table class="table table-striped table-hover table-bordered align-middle">
 
-                <thead class="table-dark">
+                <thead class="table-primary">
                     <tr>
-                        <th>ID</th>
                         <th>ssyk</th>
-                        <th>Occupation Label</th>
-                        <th>Headline</th>
-                        <th>Employer</th>
+                        <th>Yrkestitel</th>
+                        <th>annonstitel</th>
+                        <th>Anställare</th>
                         <th>Region</th>
-                        <th>Salary</th>
-                        <th>publishedat</th>
+                        <th>Månadslön</th>
+                        <th>Publicerades</th>
                     </tr>
                 </thead>
         
@@ -121,7 +118,6 @@ else if (results is not null)
                     @foreach(var employer in results.Items)
                     {
                         <tr>
-                            <td>@employer.Id</td>
                             <td><span class="badge bg-secondary">@employer.OccupationSsyk</span></td>
                             <td>@employer.OccupationLabel</td>
                             <td>@employer.Headline</td>
