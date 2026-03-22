@@ -47,19 +47,72 @@ else if (results is not null)
         @if (summary?.Occupations?.Count > 0)
         {
             <!-- SUMMARY WARNING UPON PARTIAL SUCCESS -->
-            <!-- TODO: Check if there's a warning and, if so, display it -->
+            <!-- !TODO: Check if there's a warning and, if so, display it -->
             <!-- Step 1: Check whether there is a warning in summaryWarning or not -->
+            @if (summaryWarning is not null) {
+                <!-- Step 2: If there is; Add a <div class="alert alert-warning"> that displays the warning. -->
+                <div class="alert alert-warning">
+                    @summaryWarning
+                </div>
+            }
+            
 
-            <!-- Step 2: If there is; Add a <div class="alert alert-warning"> that displays the warning. -->
 
             <!-- SUMMARY RESULT TABLE -->
             <!-- TODO: Create a table with the summary data from summary.Occupations -->
             <!-- Step 1: Add descriptive text such as a header and create a <table> -->
             
+            <h2>Summary Data</h2>
+            <table>
+                <tr>
+                    <th>Label</th>
+                    <th>SSYK</th>
+                    <th>Månadslön</th>
+                    <th>Annonser</th>
+                </tr>
+                @foreach (OccupationSummaryItem thin in summary.Occupations) {
+                    <tr>
+                        <td>@thin.OccupationLabel</td>
+                        <td>@thin.OccupationSsyk</td>
+                        <td>@thin.Salary?.MonthlySalarySek</td>
+                        <td>@thin.AdsCount</td>
+                    </tr>
+                }
+            </table>
+
             <!-- Step 2: Add a header row to the table and loop over summary.Occupations to populate the table body (<tbody>) -->
 
             <!-- Step 3: List relevant data in a user friendly manner. I.e., take UX and format into consideration -->
         }
+
+        <table>
+        <tr>
+            <th>ID</th>
+            <th>ssyk</th>
+            <th>Occupation Label</th>
+            <th>Headline</th>
+            <th>Employer</th>
+            <th>Region</th>
+            <th>Salary</th>
+            <th>publishedat</th>
+        </tr>
+        
+        @foreach(var employer in results.Items)
+        {
+            <tr>
+                <td>@employer.Id</td>
+                <td>@employer.OccupationSsyk</td>
+                <td>@employer.OccupationLabel</td>
+                <td>@employer.Headline</td>
+                <td>@employer.Employer</td>
+                <td>@employer.Region</td>
+                <td>@employer.Salary?.MonthlySalarySek</td>
+                
+                
+                <td>@employer.PublishedAt</td>
+            </tr>
+        }
+        </table>
 
         <!-- AD RESULT TABLE -->
         <!-- TODO: Create a table with the ad data from results.Items -->
@@ -69,6 +122,8 @@ else if (results is not null)
             <!-- PAGINATION -->
             <!-- TODO: Call PrevPage / NextPage and disable buttons where applicable -->
             <!-- HINT: Look at CanGoBack/CanGoForward. Use @onclick to call functions on button press. -->
+            <button @onclick="PrevPage" disabled="@(!CanGoBack)" class="btn btn-secondary">Prev</button>
+            <button @onclick="NextPage" disabled="@(!CanGoForward)" class="btn btn-primary">Next</button>
         </div>
     </div>
 }
@@ -88,43 +143,88 @@ else if (results is not null)
     private async Task HandleSearch()
     {
         // TODO: Reset offset and call LoadAsync()
-        // NOTE: Task.CompletedTask should be replaced
-        await Task.CompletedTask;
+        search.Offset = 0;
+        await LoadAsync(false);
     }
 
     private async Task PrevPage()
     {
         // TODO: lower the value of offset by limit and call LoadAsync()
-        // NOTE: Task.CompletedTask should be replaced
-        await Task.CompletedTask;
+        search.Offset -= search.Limit;
+        await LoadAsync(false);
     }
 
     private async Task NextPage()
     {
         // TODO: increase the value of offset by limit and call LoadAsync()
-        // NOTE: Task.CompletedTask should be replaced
-        await Task.CompletedTask;
+        search.Offset += search.Limit;
+        await LoadAsync(false);
     }
 
     private async Task LoadAsync(bool refreshSummary)
     {
         // TODO: implement the load logic described in Section 6 within the UI guidebook. In short:
         // Step 1: set isLoading to true, errorMessage to null, results to null, and summaryWarning to null.
+        isLoading = true;
+        errorMessage = null;
+        results = null;
+        summaryWarning = null;
 
         // Step 2: check if search.Query is empty. If so, set errorMessage to inform the user that a search phrase is required. null the summary variables (summary, summaryCacheKey, summaryWarning), set isLoading to false, and exit.
+        if(search.Query.Count() == 0)
+        {
+            errorMessage = "Sökfras krävs!";
+            summary = null;
+            summaryCacheKey = null;
+            summaryWarning = null;
+            isLoading = false;
+            return;
+        }
 
-        // Step 3: fetch the search response from ApiClient.SearchAsync() by including (query, region, limit, offset, CancellationToken.None).
+        try
+        {
+            // Step 3: fetch the search response from ApiClient.SearchAsync() by including (query, region, limit, offset, CancellationToken.None).
+            var searchResult = await ApiClient.SearchAsync(search.Query, search.Region, search.Limit, search.Offset, CancellationToken.None);
+            if (!searchResult.IsSuccess) throw new Exception(searchResult.Error);
+            results = searchResult.Data;
+            if (searchResult is null) throw new Exception("searchResult var null");
 
-        // Step 4: if the search succeeded and there is data in the response, check whether the summary needs to be reloaded. The summary should be reloaded if refreshSummary is true, summary is null, or the query/region has changed.
-        // HINT: summaryCacheKey can be a string combining query and region, e.g. $"{query}|{region}".
+            // Step 4: if the search succeeded and there is data in the response, check whether the summary needs to be reloaded. The summary should be reloaded if refreshSummary is true, summary is null, or the query/region has changed.
+            // HINT: summaryCacheKey can be a string combining query and region, e.g. $"{query}|{region}".
+            var newSummaryCacheKey = $"{search.Query}|{search.Region}";
 
-        // If a reload is needed, call ApiClient.SummaryAsync() with (query, region, 100, 0, CancellationToken.None).
-        // On success, update summary and summaryCacheKey. On failure, set summaryWarning to a user-friendly message
-        // and null summary and summaryCacheKey, so the ad list is still shown.
 
-        // Step 5: handle errors that occur, e.g., if the search is unsuccessful and set a relevant errorMessage + reset summary, summaryCacheKey, and summaryWarning.
+            var queryOrRegionChanged = newSummaryCacheKey != summaryCacheKey;
 
-        // Step 6: in the finally block, reset isLoading.
+            var shouldBeReloaded = refreshSummary || summary is null || queryOrRegionChanged;
+            if (!shouldBeReloaded) return;
+
+            // If a reload is needed, call ApiClient.SummaryAsync() with (query, region, 100, 0, CancellationToken.None).
+            // On success, update summary and summaryCacheKey. On failure, set summaryWarning to a user-friendly message
+            // and null summary and summaryCacheKey, so the ad list is still shown.
+            var summaryResult = await ApiClient.SummaryAsync(search.Query, search.Region, 100, 0, CancellationToken.None);
+            if (summaryResult.IsSuccess)
+            {
+                summary = summaryResult.Data;
+                summaryCacheKey = newSummaryCacheKey;
+            } else
+            {
+                summary = null;
+                summaryCacheKey = null;
+                summaryWarning = "Funkade inte";
+            }
+        } catch(Exception e)
+        {
+            // Step 5: handle errors that occur, e.g., if the search is unsuccessful and set a relevant errorMessage + reset summary, summaryCacheKey, and summaryWarning.
+            errorMessage = e.Message;
+            summary = null;
+            summaryCacheKey = null;
+            summaryWarning = null;
+        } finally
+        {
+            // Step 6: in the finally block, reset isLoading.
+            isLoading = false;
+        }
     }
 
     private sealed class SearchInput
