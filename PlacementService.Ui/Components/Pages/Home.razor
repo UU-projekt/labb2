@@ -62,61 +62,82 @@ else if (results is not null)
             <!-- TODO: Create a table with the summary data from summary.Occupations -->
             <!-- Step 1: Add descriptive text such as a header and create a <table> -->
             
-            <h2>Summary Data</h2>
-            <table>
-                <tr>
-                    <th>Label</th>
-                    <th>SSYK</th>
-                    <th>Månadslön</th>
-                    <th>Annonser</th>
-                </tr>
-                @foreach (OccupationSummaryItem thin in summary.Occupations) {
-                    <tr>
-                        <td>@thin.OccupationLabel</td>
-                        <td>@thin.OccupationSsyk</td>
-                        <td>@thin.Salary?.MonthlySalarySek</td>
-                        <td>@thin.AdsCount</td>
-                    </tr>
-                }
-            </table>
+            <h2 class="mt-4 mb-3">Yrkesgrupper</h2>
+            <div class="table-responsive">
+                <table class="table table-striped table-hover table-bordered align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Yrkesroll</th>
+                            <th>SSYK</th>
+                            <th>Månadslön</th>
+                            <th>Annonser</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (OccupationSummaryItem thin in summary.Occupations) {
+                        <tr>
+                            <td>@thin.OccupationLabel</td>
+                            <td><span class="badge bg-secondary">@thin.OccupationSsyk</span></td>
+                            <td>@thin.Salary?.MonthlySalarySek KR</td>
+                            <td>@thin.AdsCount</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
 
             <!-- Step 2: Add a header row to the table and loop over summary.Occupations to populate the table body (<tbody>) -->
 
             <!-- Step 3: List relevant data in a user friendly manner. I.e., take UX and format into consideration -->
-        }
-
-        <table>
-        <tr>
-            <th>ID</th>
-            <th>ssyk</th>
-            <th>Occupation Label</th>
-            <th>Headline</th>
-            <th>Employer</th>
-            <th>Region</th>
-            <th>Salary</th>
-            <th>publishedat</th>
-        </tr>
-        
-        @foreach(var employer in results.Items)
+        } else
         {
-            <tr>
-                <td>@employer.Id</td>
-                <td>@employer.OccupationSsyk</td>
-                <td>@employer.OccupationLabel</td>
-                <td>@employer.Headline</td>
-                <td>@employer.Employer</td>
-                <td>@employer.Region</td>
-                <td>@employer.Salary?.MonthlySalarySek</td>
-                
-                
-                <td>@employer.PublishedAt</td>
-            </tr>
+            <div class="alert alert-info mt-3">inga resultat hittades</div>
         }
-        </table>
 
-        <!-- AD RESULT TABLE -->
-        <!-- TODO: Create a table with the ad data from results.Items -->
-        <!-- Step 1: Follow the steps from the summary table problem above -->
+        @if(results.Items.Count > 0)
+        {            
+            <!-- AD RESULT TABLE -->
+            <!-- TODO: Create a table with the ad data from results.Items -->
+            <!-- Step 1: Follow the steps from the summary table problem above -->
+        <h2 class="mt-4 mb-3">Annonser</h2>
+
+        <div class="table-responsive">
+            <table class="table table-striped table-hover table-bordered align-middle">
+
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>ssyk</th>
+                        <th>Occupation Label</th>
+                        <th>Headline</th>
+                        <th>Employer</th>
+                        <th>Region</th>
+                        <th>Salary</th>
+                        <th>publishedat</th>
+                    </tr>
+                </thead>
+        
+                <tbody>
+                    @foreach(var employer in results.Items)
+                    {
+                        <tr>
+                            <td>@employer.Id</td>
+                            <td><span class="badge bg-secondary">@employer.OccupationSsyk</span></td>
+                            <td>@employer.OccupationLabel</td>
+                            <td>@employer.Headline</td>
+                            <td>@employer.Employer</td>
+                            <td>@employer.Region</td>
+                            <td>@employer.Salary?.MonthlySalarySek KR</td>
+                
+                
+                            <td>@employer.PublishedAt</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        }
+
 
         <div class="d-flex gap-2">
             <!-- PAGINATION -->
